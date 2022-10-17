@@ -2,6 +2,7 @@ FROM openjdk:8-jdk-slim as runtime
 MAINTAINER jingood2 <jingood2@sk.com>
 
 ENV TERM=dumb
+RUN ls -al 
 CMD ["./mvnw", "clean","package]
 ARG JAR_FILE=target/*.jar
 ADD ${JAR_FILE} app.jar
