@@ -6,6 +6,7 @@ COPY ./mvnw ./mvnw
 COPY ./src ./src
 COPY ./pom.xml ./pom.xml
 CMD ["./mvnw", "clean","package]
+RUN ls -al ./target
 
 FROM amazoncorretto:17-alpine
 #FROM adoptopenjdk/openjdk11:jdk11u-nightly-slim
