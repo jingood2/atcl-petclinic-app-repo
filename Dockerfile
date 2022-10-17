@@ -1,23 +1,23 @@
-FROM openjdk:8-jdk-slim as runtime
+FROM openjdk:8-jdk-slim as build 
 
 WORKDIR /app
 
-COPY ./mvnw ./mvnw
-COPY ./src ./src
-COPY ./pom.xml ./pom.xml
-#CMD ["./mvnw","clean","package"]
-RUN mvnw clean package
-RUN ls -al
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+COPY src src
 
-FROM amazoncorretto:17-alpine
-#FROM adoptopenjdk/openjdk11:jdk11u-nightly-slim
+RUN ./mvnw  install -DskipTests
+RUN mvnw clean package
+
+RUN cp /application/target/*.jar app.jar
+RUN java -Djarmode=layertools -jar app.jar extract
+
+FROM openjdk:8-jdk-slim
 WORKDIR /app
 
 ADD https://github.com/aws-observability/aws-otel-java-instrumentation/releases/download/v1.17.0/aws-opentelemetry-agent.jar /app/aws-opentelemetry-agent.jar
 ENV JAVA_TOOL_OPTIONS "-javaagent:/app/aws-opentelemetry-agent.jar"
-
-ARG JAR_FILE=target/*.jar
-COPY --from=runtime /app/${JAR_FILE} ./app.jar
 
 # OpenTelemetry agent configuration
 ENV OTEL_TRACES_SAMPLER "always_on"
@@ -26,4 +26,8 @@ ENV OTEL_RESOURCE_ATTRIBUTES `service.name=${SERVICE_NAME}`
 ENV OTEL_IMR_EXPORT_INTERVAL "10000"
 ENV OTEL_EXPORTER_OTLP_ENDPOINT "http://localhost:4317"
 
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+COPY --from=bulid app/dependencies/ ./
+COPY --from=bulid app/spring-boot-loader/ ./
+COPY --from=bulid app/snapshot-dependencies/ ./
+COPY --from=bulid app/application/ ./
+ENTRYPOINT ["java", "org.springframework.boot.loader.JarLauncher"]
