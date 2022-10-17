@@ -5,7 +5,7 @@ WORKDIR /app
 COPY ./mvnw ./mvnw
 COPY ./src ./src
 COPY ./pom.xml ./pom.xml
-CMD ["./mvnw", "clean","package]
+CMD ["./mvnw", "clean","package"]
 RUN ls -al
 
 FROM amazoncorretto:17-alpine
@@ -21,7 +21,7 @@ COPY --from=runtime /app/${JAR_FILE} ./app.jar
 # OpenTelemetry agent configuration
 ENV OTEL_TRACES_SAMPLER "always_on"
 ENV OTEL_PROPAGATORS "tracecontext,baggage,xray"
-ENV OTEL_RESOURCE_ATTRIBUTES "service.name=PetSearch"
+ENV OTEL_RESOURCE_ATTRIBUTES "service.name=petclinic"
 ENV OTEL_IMR_EXPORT_INTERVAL "10000"
 ENV OTEL_EXPORTER_OTLP_ENDPOINT "http://localhost:4317"
 
