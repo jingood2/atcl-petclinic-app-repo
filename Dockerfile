@@ -8,9 +8,8 @@ COPY pom.xml .
 COPY src src
 
 RUN ./mvnw  install -DskipTests
-RUN mvnw clean package
 
-RUN cp /application/target/*.jar app.jar
+RUN cp /app/target/*.jar app.jar
 RUN java -Djarmode=layertools -jar app.jar extract
 
 FROM openjdk:8-jdk-slim
